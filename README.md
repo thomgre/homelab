@@ -1,6 +1,19 @@
 # 🏠 homelab
 Homelab bare metal setup with Talos, Kubernetes and GitOps (ArgoCD)
 
+## Progress
+
+- [x] Get hardware (3 nodes + switch)
+- [x] Install Proxmox
+- [x] Configure Proxmox basics + Cluster
+- [x] Setup Terraform/OpenTofu templates
+- [ ] IaC install of VMs and Talos Linux
+- [ ] Setup Talos Linux
+- [ ] Configure k8s basics
+- [ ] Setup and run k8s bootstrap with ArgoCD
+- [ ] Configure workloads
+- [ ] Deploy workloads
+
 ## Hardware overview
 **Control plane**
 1x HP EliteDesk 800 G2 Mini - i3-6100T/ 4GB/ 120GB SSD
@@ -29,11 +42,42 @@ To improve this setup I could extend the cluster with 2 more mini PC to have 5 n
 
 ## Infrastructure
 
+
+## Proxmox
+Installed Proxmox on all 3 nodes using [Ventoy](https://www.ventoy.net/en/index.html) and a USB drive. On the HP Elitedesk GP Minis make sure to setup the BIOS with Legacy boot enabled and secure boot disabled. Also make sure to enable "Virtualization Technology" (if you forget you also get a warning about KVM on the Proxmox installer).
+
+After installation succeeded and a reboot, run the [PVE Post Install Script](https://community-scripts.github.io/ProxmoxVE/scripts?id=post-pve-install) to configure some basics, like adding the No-Subscription repository and updating Proxmox.
+
+### Configure Wake-on LAN
+`sudo apt update`
+`sudo apt install ethtool`
+
+```
+# /etc/network/interfaces
+
+auto lo
+iface lo inet loopback
+
+iface eno1 inet manual
+    postup ethtool -s eno1 wol d # <-- add this
+auto vmbr0
+
+interface vmbr0 inet static
+    address <node-ip>/24
+    gateway <gateway-ip>
+    bridge-ports eno1
+    bridge-stp off
+    bridge-fd 0
+    postup ethtool -s eno1 wol d # <-- add this
+
+source /etc/network/interfaces.d/*
+```
+
 ## Kubernetes bootstrap
 
-## Infra applications
+## Infra resources
 
-## Workload applications
+## Workloads
 
 ## Considerations
 
@@ -45,7 +89,11 @@ Proxmox:
 [Kairos](https://kairos.io/):
 
 ### k3s vs. k8s
-This is not really a comparison since both have their place and use. I'm using my Homelab to learn and experiment with Kubernetes so therefor chose to use...suprise.. Kubernetes. K3s is really nice though for IoT and Edge computing use cases due to its low(er) resource use and simplicity while maintaining full Kubernetes API compatibility. Will be looking into k3s more in the future.
+This is not really a fair comparison since both have their place and use. I'm using my Homelab to learn and experiment with Kubernetes so therefor chose to use...suprise.. Kubernetes. K3s is really nice though for IoT and Edge computing use cases due to its low(er) resource use and simplicity while maintaining full Kubernetes API compatibility. Will be looking into k3s more in the future.
+
+### Proxmox vs. Talos vs. Kairos
+
+### Omni
 
 ### GitOps decisions
 I've decided to use ArgoCD because of its user friendly UI, demand in my local market and the ability to get ArgoCD certifications. Flux is also interesting though due to its modular architecture and the more lightweight, Kubernetes native approach.
