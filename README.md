@@ -33,10 +33,10 @@ To improve this setup I could extend the cluster with 2 more mini PC to have 5 n
 | HP EliteDesk i3 4GB |   | €99  |
 | HP EliteDesk i3 16GB |   | €166  |
 | HP EliteDesk i5 8GB |   | €85  | 
-| ~~GeekPi 8U Server Cabinet 10" | | €169.99~~ |
-| ~~GeekPi 12 Port Patch Panel | | €25.99~~~~ |
-| ~~GeekPi 10" 1U Server Rack Shelf (2PCS) | | €45.99~~ |
-| ~~GeekPi DC PDU 0.5U 7 Sockets| | €59.99~~ |
+| ~~GeekPi 8U Server Cabinet 10"~~ | | ~~€169.99~~ |
+| ~~GeekPi 12 Port Patch Panel~~ | | ~~€25.99~~ |
+| ~~GeekPi 10" 1U Server Rack Shelf (2PCS)~~ | | ~~€45.99~~ |
+| ~~GeekPi DC PDU 0.5U 7 Sockets~~ | | ~~€59.99~~ |
 | Lanberg 9U 10" rack | | €46 | 
 | DIGITUS 4-way power strip 1U | | €16.99 |
 | DIGITUS Shelf 1U | | €15.13 |
