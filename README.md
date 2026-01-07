@@ -19,13 +19,13 @@ Homelab bare metal setup with Talos, Kubernetes and GitOps (ArgoCD)
 1x HP EliteDesk 800 G2 Mini - i3-6100T/ 16GB RAM / 120GB SSD
 1x HP EliteDesk 800 G2 Mini - i5-6500/ 8GB RAM / 500GB SSD
 
-![Elitedesks](https://github.com/thomgre/homelab/docs/images/elitedesk-cluster.jpeg?raw=true)
+![Elitedesks](https://github.com/thomgre/homelab/blob/main/docs/images/elitedesk-cluster.jpeg?raw=true)
 
 At first I will be using one control plane node to have similarity with a production environment and not running workloads on the control plane node. Resource wise it is important for the control plane node to have decent I/O performance for etcd.
 
 To improve this setup I could extend the cluster with 2 more mini PC to have 5 nodes in total: 3 control plane nodes for high availability and 2 worker nodes. The odd number of control plane nodes prevents split-brain scenarios and provides fault tolerance.
 
-![Homelab rack](https://github.com/thomgre/homelab/docs/images/rack.jpeg?raw=true)
+![Homelab rack](https://github.com/thomgre/homelab/blob/main/docs/images/rack.jpeg?raw=true)
 
 ### Cost breakdown
 |   |   |   |
