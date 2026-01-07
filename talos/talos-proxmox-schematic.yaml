@@ -1,0 +1,9 @@
+# Talos Image Factory Schematic for Proxmox with Longhorn Support
+# This schematic adds the necessary extensions for:
+# - iSCSI tools (required by Longhorn for storage operations)
+# - QEMU Guest Agent (required for proper Proxmox VM integration)
+customization:
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/iscsi-tools      # Enables iSCSI functionality for Longhorn
+      - siderolabs/qemu-guest-agent # Enables Proxmox VM management integration

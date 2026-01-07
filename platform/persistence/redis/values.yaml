@@ -1,0 +1,28 @@
+redis:
+  # Redis configuration
+  auth:
+    enabled: false
+  
+  # Master configuration
+  master:
+    persistence:
+      enabled: false
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    
+  # Disable replica for simple single-node setup
+  replica:
+    replicaCount: 0
+  
+  # Network policy
+  networkPolicy:
+    enabled: false
+  
+  # Metrics
+  metrics:
+    enabled: false

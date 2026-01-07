@@ -1,0 +1,11 @@
+apiVersion: v2
+name: rabbitmq
+description: RabbitMQ message broker for homelab
+type: application
+version: 1.0.0
+appVersion: "3.13.0"
+
+dependencies:
+- name: rabbitmq
+  version: "16.0.14"
+  repository: "https://charts.bitnami.com/bitnami"

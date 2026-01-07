@@ -1,0 +1,98 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: longhorn
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - name: longhorn
+  template:
+    metadata:
+      name: '{{name}}'
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"  # Deploy before apps that need storage so first wave
+    spec:
+      syncPolicy:
+        syncOptions:
+          # Namespace created separately with proper PodSecurity labels
+        automated:
+          prune: true    
+          selfHeal: true
+      project: default   # DO NOT CHANGE: must use default project
+      sources:            # DO NOT change to "source:" - array format required
+        - chart: longhorn # DO NOT CHANGE: official chart name
+          repoURL: https://charts.longhorn.io/ # DO NOT CHANGE: official repository
+          targetRevision: v1.8.1  # SAFE TO UPDATE: but test in dev first
+          helm:
+            values: |
+              # CRITICAL: DO NOT REMOVE - prevents pre-upgrade hook failures
+              preUpgradeChecker:
+                jobEnabled: false
+              defaultSettings:
+                defaultReplicaCount: 2                        # SAFE TO CHANGE: matches node count
+                guaranteedInstanceManagerCpu: 12               # SAFE TO CHANGE: based on node specs
+                createDefaultDiskLabeledNodes: false          # OVERRIDE: disable auto-discovery for Proxmox
+                defaultDataPath: /var/lib/longhorn/            # SAFE TO CHANGE: Talos persistent path
+                defaultDataLocality: best-effort               # SAFE TO CHANGE: performance vs availability
+                orphanAutoDeletion: true                       # SAFE TO CHANGE: cleanup behavior
+                storageOverProvisioningPercentage: 100         # SAFE TO CHANGE: storage limits
+                storageMinimalAvailablePercentage: 25          # SAFE TO CHANGE: space reservation
+                upgradeChecker: false                          # SAFE TO CHANGE: disable update checks
+              persistence:
+                defaultClass: true             # CRITICAL: DO NOT CHANGE - creates default StorageClass
+                defaultClassReplicaCount: 2    # SAFE TO CHANGE: matches defaultReplicaCount
+                reclaimPolicy: Retain          # CRITICAL: prevents data loss on PVC deletion
+              csi:
+                kubeletRootDir: /var/lib/kubelet  # DO NOT CHANGE: matches Talos kubelet path
+                attacherReplicaCount: 3           # SAFE TO CHANGE: based on node count
+                provisionerReplicaCount: 3        # SAFE TO CHANGE: based on node count  
+                resizerReplicaCount: 3            # SAFE TO CHANGE: based on node count
+                snapshotterReplicaCount: 3        # SAFE TO CHANGE: based on node count
+              ui:
+                replicas: 1                    # SAFE TO CHANGE: UI availability
+              ingress:
+                enabled: false                 # SAFE TO CHANGE: managed separately
+              # CRITICAL: Allow Longhorn to run on control plane nodes
+              longhornManager:
+                tolerations:
+                  - key: "node-role.kubernetes.io/control-plane"
+                    operator: "Exists"
+                    effect: "NoSchedule"
+      destination:
+        server: https://kubernetes.default.svc  # DO NOT CHANGE: local cluster
+        namespace: longhorn-system              # DO NOT CHANGE: required by Longhorn
+      # CRITICAL: DO NOT REMOVE - prevents constant OutOfSync status
+      # Kubernetes automatically adds preserveUnknownFields to CRDs causing drift
+      ignoreDifferences:  # DO NOT REMOVE: required for all Longhorn CRDs
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          name: engineimages.longhorn.io
+          jsonPointers: ["/spec/preserveUnknownFields"]
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          name: engines.longhorn.io
+          jsonPointers: ["/spec/preserveUnknownFields"]
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          name: instancemanagers.longhorn.io
+          jsonPointers: ["/spec/preserveUnknownFields"]
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          name: nodes.longhorn.io
+          jsonPointers: ["/spec/preserveUnknownFields"]
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          name: replicas.longhorn.io
+          jsonPointers: ["/spec/preserveUnknownFields"]
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          name: settings.longhorn.io
+          jsonPointers: ["/spec/preserveUnknownFields"]
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          name: volumes.longhorn.io
+          jsonPointers: ["/spec/preserveUnknownFields"]
+      revisionHistoryLimit: 3  # SAFE TO CHANGE: history retention

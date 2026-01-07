@@ -1,0 +1,11 @@
+ingress-nginx:
+  controller:
+    extraArgs:
+      enable-ssl-passthrough: "true"
+    admissionWebhooks:
+      enabled: false
+    service:
+      type: NodePort
+      nodePorts:
+        http: 30081
+        https: 30444

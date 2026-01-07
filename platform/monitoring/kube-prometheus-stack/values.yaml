@@ -1,0 +1,96 @@
+grafana:
+  # Enable Grafana
+  enabled: true
+  
+  # Additional data sources
+  # additionalDataSources:
+  # - name: Loki
+  #   type: loki
+  #   url: http://loki-read.monitoring.svc.cluster.local
+  #   access: proxy
+    
+  # Grafana configuration
+  adminPassword: admin123
+  
+  # App settings to prevent ArgoCD sync issues
+  # app:
+  #   settings:
+  #     global:
+  #       clusterName: "homelab"
+  
+  # security:
+  #   csrfKey: 54KZirS6fut7pDTf
+  
+  # Ingress configuration
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+    - grafana.local
+    path: /
+    pathType: Prefix
+  
+  # Persistence
+  persistence:
+    enabled: true
+    size: 2Gi
+
+# Prometheus configuration
+prometheus:
+  prometheusSpec:
+    # Retention settings
+    retention: 4d
+    
+    # Storage
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 10Gi
+
+# AlertManager configuration
+alertmanager:
+  alertmanagerSpec:
+    # Storage
+    storage:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 2Gi
+
+# Disable some resource-heavy features for homelab
+kubeApiServer:
+  enabled: false
+kubelet:
+  enabled: true
+kubeControllerManager:
+  enabled: false
+coreDns:
+  enabled: false
+kubeDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+# Global configuration
+global:
+  rbac:
+    create: true
+    createAggregateClusterRoles: false 
+
+prometheusOperator:
+  admissionWebhooks:
+    enabled: true
+    annotations:
+      argocd.argroj.io/hook: PostSync
+      argocd.argroj.io/hook-delete-policy: HookSucceeded
+    patch:
+      annotations:
+        argocd.argroj.io/hook: PostSync
+        argocd.argroj.io/hook-delete-policy: HookSucceeded

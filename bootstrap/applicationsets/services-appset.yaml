@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: services-applications
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: git@github.com:thomgre/homelab.git
+      revision: HEAD
+      directories:
+      - path: platform/services/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: "3"
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:thomgre/homelab.git
+        targetRevision: HEAD
+        path: '{{path}}'
+        helm:
+          valueFiles:
+          - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: applications
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - PrunePropagationPolicy=foreground
+        - PruneLast=true
+      revisionHistoryLimit: 3

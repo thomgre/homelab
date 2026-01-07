@@ -1,0 +1,20 @@
+# Longhorn System Namespace with relaxed PodSecurity
+# 
+# CRITICAL: Longhorn requires privileged access for storage operations
+# This is safe because Longhorn is a trusted storage system that needs:
+# - hostPath volumes to access node storage
+# - privileged containers for mount operations  
+# - host networking for storage communication
+#
+# DO NOT CHANGE: These security settings are required for Longhorn on Talos
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: longhorn-system
+  labels:
+    # Allow privileged operations required by Longhorn storage system
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged  
+    pod-security.kubernetes.io/warn: privileged
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"  # Create before Longhorn application

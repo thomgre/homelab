@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: persistence-applications
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: git@github.com:thomgre/homelab.git
+      revision: HEAD
+      directories:
+      - path: platform/persistence/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: "2"
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:thomgre/homelab.git
+        targetRevision: HEAD
+        path: '{{path}}'
+        helm:
+          valueFiles:
+          - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: data-services
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - PrunePropagationPolicy=foreground
+        - PruneLast=true
+      # Ignore CloudNativePG operator managed fields to prevent OutOfSync status in argocd
+      ignoreDifferences:
+      - group: postgresql.cnpg.io
+        kind: Cluster
+        jsonPointers:
+        - /status
+        - /spec/monitoring
+        - /spec/certificates
+        - /spec/managed
+        - /spec/instances
+        - /spec/primaryUpdateStrategy
+        - /spec/switchoverDelay
+        - /spec/failoverDelay
+      - group: ""
+        kind: Secret
+        name: postgres-cluster-credentials
+        jsonPointers:
+        - /metadata/resourceVersion
+        - /metadata/generation
+      revisionHistoryLimit: 3

@@ -1,0 +1,20 @@
+# Monitoring Namespace with privileged PodSecurity
+# 
+# CRITICAL: Monitoring components (node-exporter) require privileged access
+# This is safe because these are trusted monitoring tools that need:
+# - hostPath volumes to access node metrics (/proc, /sys, /root)
+# - hostNetwork and hostPID for system-level monitoring
+# - hostPort for metrics collection
+#
+# DO NOT CHANGE: These security settings are required for node-exporter on Talos
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    # Allow privileged operations required by monitoring tools
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged  
+    pod-security.kubernetes.io/warn: privileged
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"  # Create before monitoring applications

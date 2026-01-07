@@ -1,0 +1,5 @@
+apiVersion: v2
+name: grafana-ingress
+description: Ingress for Grafana
+type: application
+version: 1.0.0

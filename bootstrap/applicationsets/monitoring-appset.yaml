@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: monitoring-applications
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: git@github.com:thomgre/homelab.git
+      revision: HEAD
+      directories:
+      - path: platform/monitoring/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: "2"
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:thomgre/homelab.git
+        targetRevision: HEAD
+        path: '{{path}}'
+        helm:
+          valueFiles:
+          - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: monitoring
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - PrunePropagationPolicy=foreground
+        - PruneLast=true
+        - ServerSideApply=true
+        - SkipDryRunOnMissingResource=true
+      revisionHistoryLimit: 3
+      ignoreDifferences:
+      - group: monitoring.coreos.com
+        kind: ServiceMonitor
+        jqPathExpressions:
+        - .spec.endpoints[0].enableHttp2
+        - .spec.attachMetadata
+      - group: monitoring.coreos.com
+        kind: Prometheus
+        jqPathExpressions:
+        - .spec.attachMetadata
+        - .metadata.annotations
+        - .metadata.labels
+      - group: monitoring.coreos.com
+        kind: Alertmanager
+        jqPathExpressions:
+        - .spec.attachMetadata
+        - .metadata.annotations
+        - .metadata.labels

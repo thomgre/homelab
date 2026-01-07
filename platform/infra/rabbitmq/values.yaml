@@ -1,0 +1,77 @@
+rabbitmq:
+  # Authentication - Simple homelab credentials
+  auth:
+    username: "admin"
+    password: "rabbitmq-homelab"
+    erlangCookie: "homelab-cookie-2025"
+  
+  # Clustering for High Availability
+  clustering:
+    enabled: true
+    replicaCount: 2
+  
+  # Persistence
+  persistence:
+    enabled: true
+    storageClass: "longhorn"
+    size: 8Gi
+  
+  # Resource limits
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi" 
+      cpu: "500m"
+  
+  # Essential plugins
+  plugins: "rabbitmq_management rabbitmq_peer_discovery_k8s rabbitmq_prometheus"
+  
+  # Production-ready configuration
+  extraConfiguration: |
+    # Clustering
+    cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
+    cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+    cluster_formation.k8s.address_type = hostname
+    cluster_formation.node_cleanup.only_log_warning = true
+    cluster_partition_handling = autoheal
+    
+    # Queue settings
+    queue_master_locator = balanced
+    
+    # Memory and disk thresholds
+    vm_memory_high_watermark.relative = 0.6
+    disk_free_limit.relative = 0.2
+  
+  # Security context
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 999
+    runAsGroup: 999
+    runAsNonRoot: true
+  
+  # Pod Disruption Budget
+  pdb:
+    create: false
+  
+  # Monitoring with Prometheus
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: "infrastructure" 
+      interval: 30s
+      additionalLabels:
+        release: kube-prometheus-stack
+  
+  # Pod anti-affinity for better distribution
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: rabbitmq
+            topologyKey: kubernetes.io/hostname

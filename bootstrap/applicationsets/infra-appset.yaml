@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra-applications
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: git@github.com:thomgre/homelab.git
+      revision: HEAD
+      directories:
+      - path: platform/infra/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:thomgre/homelab.git
+        targetRevision: HEAD
+        path: '{{path}}'
+        helm:
+          valueFiles:
+          - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: infrastructure
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - PrunePropagationPolicy=foreground
+        - PruneLast=true
+        - ServerSideApply=true
+        - SkipDryRunOnMissingResource=true
+      revisionHistoryLimit: 3
+      ignoreDifferences:
+      - group: apps
+        kind: StatefulSet
+        name: rabbitmq
+        jsonPointers:
+        - /spec/template/metadata/annotations

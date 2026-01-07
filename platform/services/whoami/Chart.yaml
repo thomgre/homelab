@@ -1,0 +1,4 @@
+apiVersion: v2
+name: whoami
+description: Simple whoami service
+version: 1.0.0
